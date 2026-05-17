@@ -20,7 +20,7 @@ A one-line description of what went wrong.
 ## Environment
 - OS / GPU(s):
 - Python: `python --version`
-- `pip show vllm google-genai openai | head -3`
+- Key package versions: `pip show vllm google-genai openai | grep -E '^(Name|Version)'`
 - Output of `make check` (or `python scripts/check_env.py`):
 
 ## Logs / stack trace
