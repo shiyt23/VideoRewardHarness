@@ -9,15 +9,22 @@ Post-v0.1.2 polish, slated for v0.1.3:
 ### Added
 
 - `scripts/check_links.sh` &mdash; audits every markdown link in the docs (relative paths always; external URLs with `--external`).
-- `WALKTHROUGH.md` &mdash; 5-step Vertex AI service-account setup guide with direct GCP console deep-links.
+- `WALKTHROUGH.md` &mdash; 5-step Vertex AI service-account setup guide with direct GCP console deep-links; step 8 now shows the fast `python scripts/run_benchmark.py --config configs/default.yaml` paper-reproduction path against the shipped `src/library/` (no evolution required first).
 - README release badge auto-updates from the latest GitHub tag.
 - Per-author `affiliation` entries in the JSON-LD `ScholarlyArticle` block (21 author&ndash;org links).
+- `examples/score_pair.py --show-chain` flag to print the full `<think>/<tool>/<obs>/<answer>` reasoning trace.
+- `REWARDHARNESS_SUBAGENT_MODEL` env var lets you swap in a non-Qwen OpenAI-compatible Sub-Agent without editing source. Mirrors the existing `REWARDHARNESS_TEMPLATES_DIR` pattern.
+- `CLAUDE_API_BASE_URL` / `CLAUDE_API_KEY` env vars in `vanilla/bench_{claude,genaibench,imagenhub}.py`. Previously the URL was hardcoded to a dead internal proxy, so the Claude baselines were not reproducible without editing source.
 
 ### Changed
 
 - `CLAUDE.md` rewritten with an explicit "for AI coding agents" preamble; dropped the internal-only `a-tool/edit-reward/` reference; tightened the no-coauthor rule to also forbid AI-attribution footers.
 - README "Repository layout": `data/` row clarified (HuggingFace caches into `~/.cache/huggingface/`, not the repo's `data/` dir).
+- README "Architecture": honest description of the evolution gate &mdash; replaces "kept only if held-out accuracy improves" with the actual `explore_margin` semantics (small dips permitted within tolerance).
 - Footer on the website lists both code mirrors (TIGER-AI-Lab / KlingAIResearch).
+- Website "Method" card now describes the actual phase A/B/C structure from `src/pipeline.py` instead of a fictitious "five stages" framing.
+- Website figures now use `loading="lazy"` and `decoding="async"`, cutting first-paint bandwidth by ~820 KB for visitors who don't scroll past Abstract.
+- `vanilla/README.md` &mdash; new 3-row backend/env-var table covers Gemini-direct, Gemini-gateway, and Claude-proxy setups at a glance.
 
 ### Removed
 
@@ -32,6 +39,9 @@ Post-v0.1.2 polish, slated for v0.1.3:
 - `scripts/setup_env.sh` step labels harmonised &mdash; was `[1/3]`/`[2/3]`/`[3/3]`/`[4/5]`/`[5/5]`, now consistently `[N/5]`.
 - `scripts/serve_vllm_multi.sh` &mdash; Bright Cluster Manager paths (`/cm/...`) are now overridable via `SLURM_PREFIX`, `CUDA_LIBS`, or skippable entirely with `RH_SKIP_ENV_PIN=1`. Previously broke `LD_LIBRARY_PATH` on vanilla Ubuntu/RHEL hosts.
 - `scripts/download_data.sh` &mdash; dropped a dead checksum-generation step that wrote a `data/checksums.txt` no other script ever read. Replaced with a one-liner showing how to compare HuggingFace's built-in `_fingerprint` instead.
+- `scripts/check_env.py` &mdash; vLLM endpoint probes now run in parallel (was sequential; with 16 endpoints all timing out, preflight took 48 s instead of ~3 s).
+- `TROUBLESHOOTING.md` &mdash; corrected two doc/code drifts: the `/v1/models` health check shows `Qwen2.5-VL-7B-Instruct` (no `Qwen/` prefix), and the OOM mitigation now points at the actual `GPU_MEM` env var (default 0.85) instead of a non-existent `--gpu-memory-utilization` flag with the wrong default.
+- `examples/show_reasoning_format.py` &mdash; corrected the tool-call limit (`MAX_TOOL_CALLS = 5` in `src/sub_agent.py`; was misdocumented as "default 3, bounded by config").
 
 ## [0.1.2] — 2026-05-16
 
