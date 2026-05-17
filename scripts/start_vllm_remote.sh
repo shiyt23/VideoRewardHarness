@@ -27,13 +27,20 @@ PORT=$1
 GPU_MEM=$2
 GPU_ID=${3:-0}
 
-echo "Starting vLLM on $(hostname) GPU=$GPU_ID port=$PORT gpu_mem=$GPU_MEM at $(date)"
-CUDA_VISIBLE_DEVICES=$GPU_ID python -m vllm.entrypoints.openai.api_server \
-    --model Qwen/Qwen2.5-VL-7B-Instruct \
-    --served-model-name Qwen2.5-VL-7B-Instruct \
+# Honor the same env-var conventions as scripts/serve_vllm_multi.sh so
+# VLM-swap setups stay coherent across launchers.
+PYTHON="${VLLM_PYTHON:-python}"
+MODEL="${VLLM_MODEL_PATH:-Qwen/Qwen2.5-VL-7B-Instruct}"
+SERVED_NAME="${REWARDHARNESS_SUBAGENT_MODEL:-Qwen2.5-VL-7B-Instruct}"
+MAX_MODEL_LEN="${MAX_MODEL_LEN:-16384}"
+
+echo "Starting vLLM on $(hostname) GPU=$GPU_ID port=$PORT model=$MODEL served=$SERVED_NAME gpu_mem=$GPU_MEM at $(date)"
+CUDA_VISIBLE_DEVICES=$GPU_ID $PYTHON -m vllm.entrypoints.openai.api_server \
+    --model "$MODEL" \
+    --served-model-name "$SERVED_NAME" \
     --tensor-parallel-size 1 \
     --port $PORT \
-    --max-model-len 16384 \
+    --max-model-len "$MAX_MODEL_LEN" \
     --limit-mm-per-prompt '{"image": 5}' \
     --dtype bfloat16 \
     --gpu-memory-utilization $GPU_MEM
