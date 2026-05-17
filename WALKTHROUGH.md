@@ -129,7 +129,8 @@ End-to-end: env setup → dataset download → vLLM serve → 5-iteration evolut
 | Add a new Skill or Tool | `src/library/__init__.py` (`add_skill`, `add_tool`) |
 | Change Sub-Agent prompts | `src/sub_agent.py` (`BASE_INSTRUCTIONS_NO_TOOLS`, `TOOL_INSTRUCTIONS`) |
 | Tweak evolution gating | `src/pipeline.py` and `evolution.*` in `configs/default.yaml` |
-| Add a new VLM backend | `src/sub_agent.py` (constructor accepts any OpenAI-compatible client) |
+| Swap in a different OpenAI-compatible VLM | Export `REWARDHARNESS_SUBAGENT_MODEL=<your-model-id>`; point `configs/endpoints.txt` at your server. No source edit needed. |
+| Add a non-OpenAI-compatible VLM backend | Subclass `SubAgent` in `src/sub_agent.py` and override `_call_vllm` (see README §Swapping Sub-Agent). |
 | Debug a single example | `examples/inspect_library.py` + `examples/show_reasoning_format.py` |
 
 If something breaks, [`TROUBLESHOOTING.md`](TROUBLESHOOTING.md) covers the common failure modes.
