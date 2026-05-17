@@ -17,6 +17,8 @@ import tempfile
 import openai
 import yaml
 
+from src.sub_agent import SUBAGENT_MODEL
+
 # Regex to match YAML frontmatter: file must start with '---' on its own line,
 # followed by YAML content, then a closing '---' on its own line.
 # Uses re.DOTALL so '.' matches newlines within the YAML block.
@@ -346,7 +348,7 @@ class Library:
 
         client = openai.OpenAI(base_url=endpoint_pool.next(), api_key="token")
         resp = client.chat.completions.create(
-            model="Qwen2.5-VL-7B-Instruct",
+            model=SUBAGENT_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": content},
