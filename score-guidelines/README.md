@@ -1,14 +1,18 @@
 # Score guidelines
 
-Human-rater rubric templates used to **collect** the preference demonstrations RewardHarness learns from. These are NOT what the Sub-Agent reads at inference time — those are the Skills in `src/library/skills/`. These templates were the prompts shown to human annotators when they produced the 100 demonstrations in the calibration set.
+The scoring rubric templates that `src/sub_agent.py` loads at inference time. Each `SubAgent.evaluate(...)` call reads both files, substitutes `{text_prompt}` with the editing instruction, and includes them in the Sub-Agent's scoring system prompt so every preference judgment scores each image on both dimensions independently.
 
-| Template | Dimension | Scale |
-|---|---|---|
-| `template1_instruction_following.md` | Instruction-following & semantic fidelity | 1–4 |
-| `template2_visual_quality.md` | Visual quality & realism | 1–4 |
+| Template | Dimension | Scale | Loaded by |
+|---|---|---|---|
+| `template1_instruction_following.md` | Instruction-following & semantic fidelity | 1–4 (integer) | `src/sub_agent.py` (`SCORE_TEMPLATES_DIR/template1_*`) |
+| `template2_visual_quality.md` | Visual quality & realism | 1–4 (integer) | `src/sub_agent.py` (`SCORE_TEMPLATES_DIR/template2_*`) |
 
-Both templates resolve `{text_prompt}` against the editing instruction at rendering time. Output is a single integer 1–4.
+The 1–4 scale is the **internal scale used end-to-end** — by human annotators when they produced the 100 calibration demonstrations, by the Sub-Agent at inference time, and by `evaluate_prediction` in `src/evaluator.py` when comparing against ground truth. There is no rescaling step.
+
+## Overriding the templates path
+
+`SCORE_TEMPLATES_DIR` defaults to `<repo>/score-guidelines/`. Set `REWARDHARNESS_TEMPLATES_DIR=/abs/path/to/templates` to point at a different directory — useful for wheel/sdist installs that move the templates out of the source tree, or for ablation studies that swap in alternative rubrics. See `.env.example`.
 
 ## Why include these?
 
-Reviewers reproducing the paper sometimes want to inspect the rater interface — both for re-collecting their own demonstrations and for understanding what "ground truth" means in our setup. The 1–4 scale is mapped to a 1–5 internal scale in `src/library/skills/` so the Sub-Agent stays consistent with the original demonstrations.
+The templates are part of the Sub-Agent's runtime contract — anyone reproducing or extending the pipeline needs to see exactly what scoring rubric the model is asked to apply. They're also the rater interface that produced the calibration set, so reviewers can verify what "ground truth" means in the paper's setup.
