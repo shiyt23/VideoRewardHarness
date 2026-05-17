@@ -88,7 +88,7 @@ flowchart LR
     EV -- "skill / tool updates (gated)" --> LIB
 ```
 
-At **inference**, the Router selects relevant entries from the Library and the frozen Sub-Agent builds a reasoning chain that produces a preference judgment. At **evolution**, the Chain Analyzer compares predictions against ~100 ground-truth labels and the Evolver applies skill/tool updates — keeping each update only if held-out validation accuracy improves.
+At **inference**, the Router selects relevant entries from the Library and the frozen Sub-Agent builds a reasoning chain that produces a preference judgment. At **evolution**, the Chain Analyzer compares predictions against ~100 ground-truth labels and the Evolver applies skill/tool updates — keeping each update only if held-out validation accuracy stays within an exploration tolerance of the previous best (see `evolution.explore_margin` in `configs/default.yaml`; default `0.075`). Catastrophic regressions roll back, but small dips are permitted so the search can escape local minima.
 
 | Module | What it does |
 |---|---|
