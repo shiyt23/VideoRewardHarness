@@ -22,7 +22,7 @@ Gemini (orch layer)          Qwen vLLM (sub-agent + tools)
 ## Commands
 
 ```bash
-# Tests (100 tests, ~2s)
+# Tests (107 tests, ~2s)
 python -m pytest tests/ -v
 
 # Evolution (main experiment)

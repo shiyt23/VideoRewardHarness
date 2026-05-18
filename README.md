@@ -234,7 +234,7 @@ The paper's Gemini-2.0-Flash variant uses path (2). For evaluation-only / benchm
 RewardHarness/
 ├── src/                  # Orchestrator, Sub-Agent, Library, Pipeline
 ├── scripts/              # run_evolution.py, run_benchmark.py, vLLM launchers
-├── tests/                # pytest suite (~100 tests)
+├── tests/                # pytest suite (~107 tests, no GPU/network)
 ├── configs/              # default.yaml + vLLM endpoints
 ├── vanilla/              # Baseline benchmark scripts (Claude, Gemini, etc.)
 ├── score-guidelines/     # Reference rubrics
