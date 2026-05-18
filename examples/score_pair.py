@@ -81,8 +81,11 @@ def main():
     skill_context = router.prepare_context(args.prompt)
     print(f"    context bytes: {len(skill_context)}")
 
-    print(f"\n==> SubAgent (vLLM) scores the pair")
     pool = EndpointPool(endpoints_file=args.endpoints)
+    from src.sub_agent import SUBAGENT_MODEL
+    print(f"\n==> SubAgent (vLLM) scores the pair")
+    print(f"    model id: {SUBAGENT_MODEL!r}  (override with REWARDHARNESS_SUBAGENT_MODEL)")
+    print(f"    endpoints: {pool.size} listed in {args.endpoints}")
     agent = SubAgent(lib, pool)
     result = agent.evaluate(
         source_img=b64(args.source),
