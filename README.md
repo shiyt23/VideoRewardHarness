@@ -235,16 +235,22 @@ The paper's Gemini-2.0-Flash variant uses path (2). For evaluation-only / benchm
 ```
 RewardHarness/
 ├── src/                  # Orchestrator, Sub-Agent, Library, Pipeline
-├── scripts/              # run_evolution.py, run_benchmark.py, vLLM launchers
+├── scripts/              # run_evolution.py, run_benchmark.py, vLLM launchers, check_env.py preflight
 ├── tests/                # pytest suite (~107 tests, no GPU/network)
+├── examples/             # inspect_library.py + show_reasoning_format.py (no-API demos),
+│                         # score_pair.py (end-to-end), seed_library/, sample_*.json
 ├── configs/              # default.yaml + vLLM endpoints
-├── vanilla/              # Baseline benchmark scripts (Claude, Gemini, etc.)
-├── score-guidelines/     # Reference rubrics
+├── vanilla/              # Baseline benchmark scripts (Claude / Gemini-gateway, on EditReward-Bench / GenAI-Bench / ImagenHub)
+├── score-guidelines/     # 1–4 scoring rubric templates loaded by src/sub_agent.py at inference
 ├── data/                 # Local cache target (datasets actually live in ~/.cache/huggingface)
-├── Makefile              # `make help` lists install / test / demo / benchmark / reproduce
+├── Makefile              # `make help` lists install / test / demo / benchmark / evolve / reproduce
 ├── CITATION.cff          # GitHub-rendered "Cite this repository" widget
 ├── LICENSE               # Apache 2.0
-└── requirements.txt      # Python dependencies
+├── requirements.txt      # Python dependencies (core)
+├── requirements-vllm.txt # vLLM-only deps (GPU); skip for CPU-only workflows
+├── .env.example          # Every env var the code reads (cp to .env)
+├── README.md / CHANGELOG.md / WALKTHROUGH.md / OUTPUTS.md   # User-facing docs
+└── TROUBLESHOOTING.md / CONTRIBUTING.md / SECURITY.md       # Operational docs
 ```
 
 ## Walkthrough
