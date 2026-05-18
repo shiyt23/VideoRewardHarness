@@ -48,8 +48,9 @@ Read [`WALKTHROUGH.md`](WALKTHROUGH.md) for the 9-step path from `git clone` to 
 
 | Dataset | Use | Hub |
 |---|---|---|
-| `AgPerry/EditReward-Data-100` | 100 preference demos for evolution (train+val split) | [🤗 Hub](https://huggingface.co/datasets/AgPerry/EditReward-Data-100) |
-| `TIGER-Lab/EditReward-Bench` | K=2/3/4 ranking benchmark (gated) | [🤗 Hub](https://huggingface.co/datasets/TIGER-Lab/EditReward-Bench) |
+| `AgPerry/EditReward-Data-100` | 100 preference demos for evolution (train+val split) &mdash; read by `scripts/run_evolution.py` | [🤗 Hub](https://huggingface.co/datasets/AgPerry/EditReward-Data-100) |
+| `TIGER-Lab/EditReward-Bench` | K=2/3/4 ranking benchmark (gated) &mdash; read by `scripts/run_benchmark.py` | [🤗 Hub](https://huggingface.co/datasets/TIGER-Lab/EditReward-Bench) |
+| `TIGER-Lab/GenAI-Bench` (`image_edition`, `test_v1`) | Single-number pair-ranking benchmark needed for the paper's 47.4% headline; **not** consumed by `scripts/run_benchmark.py` &mdash; only by `vanilla/*_genaibench.py` baselines today. Merge with `run_benchmark.py` output to reproduce the headline (see [`OUTPUTS.md`](OUTPUTS.md#after-make-benchmark--scriptsrun_benchmarkpy)). | [🤗 Hub](https://huggingface.co/datasets/TIGER-Lab/GenAI-Bench) |
 
 RewardHarness reframes reward modeling as **context evolution** rather than weight optimization. From as few as ~100 preference demonstrations, an Orchestrator (Gemini) iteratively evolves a library of *Skills* (declarative scoring rubrics) and *Tools* (procedural in-context specs) that a frozen Sub-Agent (Qwen2.5-VL-7B via vLLM) consults at inference time. With 0.05% of the EditReward training data, RewardHarness reaches **47.4%** average accuracy on EditReward-Bench + GenAI-Bench, surpassing GPT-5 by 5.3 points.
 
