@@ -94,16 +94,25 @@ def check_credentials_file() -> bool:
     return True
 
 
-def _probe_one(url: str, timeout: float) -> tuple[str, str]:
-    """Return (url, status_line). status_line is human-readable; '' on success."""
+def _probe_one(url: str, timeout: float) -> tuple[str, str, str]:
+    """Return (url, status_line, served_model_id).
+
+    status_line is human-readable; '' on success.
+    served_model_id is the response's data[0].id when status==200; '' otherwise.
+    """
     try:
         req = urllib.request.Request(f"{url.rstrip('/')}/models")
         with urllib.request.urlopen(req, timeout=timeout) as r:
-            if r.status == 200:
-                return url, ""
-            return url, f"HTTP {r.status}"
+            if r.status != 200:
+                return url, f"HTTP {r.status}", ""
+            try:
+                body = json.loads(r.read())
+                served = body.get("data", [{}])[0].get("id", "")
+            except (json.JSONDecodeError, IndexError, AttributeError):
+                served = ""
+            return url, "", served
     except (urllib.error.URLError, TimeoutError, OSError) as e:
-        return url, f"{type(e).__name__}: {e}"
+        return url, f"{type(e).__name__}: {e}", ""
 
 
 def check_endpoints(endpoints_path: str, timeout: float = 3.0) -> bool:
@@ -119,19 +128,27 @@ def check_endpoints(endpoints_path: str, timeout: float = 3.0) -> bool:
     if not urls:
         print(f"  [{WARN}] no endpoints listed in {endpoints_path}")
         return True
+    expected_model = os.environ.get("REWARDHARNESS_SUBAGENT_MODEL", "Qwen2.5-VL-7B-Instruct")
     # Probe in parallel so 16 unreachable endpoints take ~timeout, not 16*timeout.
     ok_count = 0
+    served_mismatch = []
     with ThreadPoolExecutor(max_workers=min(16, len(urls))) as ex:
-        for url, err in ex.map(lambda u: _probe_one(u, timeout), urls):
-            if not err:
-                ok_count += 1
-                print(f"  [{PASS}] {url}")
-            else:
+        for url, err, served in ex.map(lambda u: _probe_one(u, timeout), urls):
+            if err:
                 print(f"  [{WARN}] {url} -> {err}")
+                continue
+            ok_count += 1
+            if served and served != expected_model:
+                served_mismatch.append((url, served))
+                print(f"  [{WARN}] {url}: serves {served!r}, pipeline expects {expected_model!r}")
+            else:
+                print(f"  [{PASS}] {url} (model={served or '?'})")
     if ok_count == 0:
         print(f"  [{WARN}] no endpoints reachable — bring one up with scripts/serve_vllm_multi.sh")
     else:
         print(f"  [{PASS}] {ok_count}/{len(urls)} endpoint(s) reachable")
+    if served_mismatch:
+        print(f"  [{WARN}] {len(served_mismatch)} endpoint(s) serve a different model id than REWARDHARNESS_SUBAGENT_MODEL — see TROUBLESHOOTING.md (404 mismatch).")
     return True  # endpoint probe is informational only
 
 
