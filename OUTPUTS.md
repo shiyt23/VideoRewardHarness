@@ -91,25 +91,36 @@ results/
 
 ### `benchmark_results.json`
 
-See [`examples/sample_benchmark_results.json`](examples/sample_benchmark_results.json) for a full sample matching the paper's Qwen numbers.
+`scripts/run_benchmark.py` writes the **EditReward-Bench K=2/3/4** block — three keys, one per group size:
 
 ```jsonc
 {
-  // ---- Run metadata (keys prefixed with "_" so they sort to the top in diffs) ----
-  "_about":        "Illustrative sample matching the paper's headline numbers …",
-  "_library_dir":  "results/my_run/checkpoints/best",  // which Library was scored
-  "_orchestrator": "gemini-3.1-pro-preview",           // Router / ChainAnalyzer model
-  "_sub_agent":    "Qwen2.5-VL-7B-Instruct (via vLLM)",
-  // ---- Headline accuracy ----
-  "average":       0.457,                              // mean of the four sub-scores
-  "k2":          { "accuracy": 0.579, "n_total": 700, "n_correct": 405 },
-  "k3":          { "accuracy": 0.467, "n_total": 350, "n_correct": 163 },
-  "k4":          { "accuracy": 0.108, "n_total": 175, "n_correct":  19 },
-  "genai_bench": { "accuracy": 0.675, "n_total": 600, "n_correct": 405 }
+  "k2": { "accuracy": 0.579, "n_total": 700, "n_correct": 405, "n_pairs": 700, "pair_results": [...] },
+  "k3": { "accuracy": 0.467, "n_total": 350, "n_correct": 163, "n_pairs": 1050, "pair_results": [...] },
+  "k4": { "accuracy": 0.108, "n_total": 175, "n_correct":  19, "n_pairs": 1050, "pair_results": [...] }
 }
 ```
 
-Keys prefixed with `_` are metadata that captures the run context — they're handy when you compare results across runs (`jq '._library_dir, ._sub_agent, .average' results/*.json`).
+The illustrative sample at [`examples/sample_benchmark_results.json`](examples/sample_benchmark_results.json) also carries paper-reference fields that `run_benchmark.py` itself does NOT compute — they reflect the paper's full evaluation, which includes an additional GenAI-Bench pass on top of EditReward-Bench:
+
+```jsonc
+{
+  // ---- Run metadata you may add yourself for cross-run comparison ----
+  "_about":        "Illustrative — paper's full pipeline output, not direct run_benchmark.py output",
+  "_library_dir":  "results/my_run/checkpoints/best",
+  "_orchestrator": "gemini-3.1-pro-preview",
+  "_sub_agent":    "Qwen2.5-VL-7B-Instruct (via vLLM)",
+  // ---- Paper headline (requires combining run_benchmark.py output with a separate
+  //      GenAI-Bench pass — see vanilla/*_genaibench.py for the baseline scripts) ----
+  "average":       0.457,                              // mean of the four sub-scores below
+  "genai_bench":   { "accuracy": 0.675, "n_total": 600, "n_correct": 405 }
+}
+```
+
+Keys prefixed with `_` are run-context metadata you can drop in by hand or via a wrapper script (e.g. `scripts/run_all_benchmarks.sh`); `genai_bench` and `average` need a separate GenAI-Bench evaluation pass and are not written by `run_benchmark.py` directly. Use `jq` to merge:
+```bash
+jq -s '.[0] * .[1]' editreward_results.json genai_bench_results.json > combined.json
+```
 
 Compare against the headline numbers in [`CHANGELOG.md`](CHANGELOG.md) for the v0.1.0 release: Qwen Sub-Agent reaches K=2: 57.9 / K=3: 46.7 / K=4: 10.8 / GenAI-Bench: 67.5; Gemini-2.0-Flash Sub-Agent reaches K=2: 66.2 / K=3: 45.3 / K=4: 13.5 / GenAI-Bench: 64.4.
 
